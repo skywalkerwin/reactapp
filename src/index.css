@@ -49,3 +49,9 @@ body {
     margin-left: 20px;
   }
   
+  .swap-button{
+      float: right;
+      margin-right: -1px;
+      margin-top: -1px;
+      padding-right: -20;
+  }

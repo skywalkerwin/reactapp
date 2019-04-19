@@ -22,25 +22,23 @@ function Square(props) {
             />
         );
     }
-  
+
+    createTable = () => {
+      let table = []
+      for (let i=0; i<3;i++){
+          let children = []
+          for (let j=0; j<3;j++){
+              children.push( this.renderSquare((i*3)+j))
+          }
+          table.push(<div className = "board-row"> {children} </div>)
+      }
+      return table;
+    }
+
     render() {
       return (
         <div>
-          <div className="board-row">
-            {this.renderSquare(0)}
-            {this.renderSquare(1)}
-            {this.renderSquare(2)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(3)}
-            {this.renderSquare(4)}
-            {this.renderSquare(5)}
-          </div>
-          <div className="board-row">
-            {this.renderSquare(6)}
-            {this.renderSquare(7)}
-            {this.renderSquare(8)}
-          </div>
+          {this.createTable()}
         </div>
       );
     }
@@ -52,16 +50,19 @@ function Square(props) {
         this.state = {
             history: [{
                 squares: Array(9).fill(null),
+                coords: Array(2).fill(0),
             }],
             stepNumber: 0,
             xIsNext: true,
+            reverse: false,
         };
     }
 
     handleClick(i) {
-        const history = this.state.history;
+        const history = this.state.history.slice(0, this.state.stepNumber +1);
         const current = history[history.length -1];
         const squares = current.squares.slice();
+        const coord = [Math.floor(i/3), (i%3)];
         if (calculateWinner(squares) || squares[i]) {
             return;
         }
@@ -69,11 +70,11 @@ function Square(props) {
         this.setState({
             history: history.concat([{
                 squares: squares,
+                coords: coord,
             }]),
             stepNumber: history.length,
             xIsNext: !this.state.xIsNext,
         });
-        console.log(this.state);
     }
 
     jumpTo(step){
@@ -83,16 +84,26 @@ function Square(props) {
         });
     }
 
+    swapOrder(){
+        this.setState({
+            reverse: !this.reverse,
+        })
+    }
+
     render() {
-        const history = this.state.history
+        const rev = this.state.reverse;
+        const history = rev ? this.state.history.reverse() : this.state.history;
         const current = history[this.state.stepNumber];
         const winner = calculateWinner(current.squares);
-
         const moves = history.map((step, move) => {
-            const desc = move ? 'Go to Move #' + move : 'Go to game start';
+            const desc = move ? 'Go to Move #' + move + ' ( ' + history[move].coords+' )' : 'Go to game start';
+            const stepcheck = this.state.stepNumber === move;
+            console.log(stepcheck)
             return (
                 <li key={move}>
-                    <button onClick = {() => this.jumpTo(move)}> {desc} </button>
+                    <button onClick = {() => this.jumpTo(move)}> 
+                        {stepcheck ? <b> {desc} </b> : desc}
+                    </button>
                 </li>
             );
         });
@@ -115,6 +126,11 @@ function Square(props) {
           <div className="game-info">
             <div>{status}</div>
             <ol>{moves}</ol>
+          </div>
+          <div className="swap-button">
+            <button onClick = {() => this.swapOrder()}>
+                Swap Button
+            </button>
           </div>
         </div>
       );
